@@ -1,0 +1,23 @@
+name: Remote SSH Deploy
+
+on:
+  push:
+    branches:
+      - main # Jalankan otomatis setiap kali push ke branch main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploying via SSH Command
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: u5443501
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22 
+          script: |
+            cd /home/u5443501/public_html/twibbon
+            git pull origin main
+            npm install
+            npm run build
