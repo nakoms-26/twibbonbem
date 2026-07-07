@@ -15,7 +15,7 @@ jobs:
           host: ${{ secrets.SERVER_IP }}
           username: u5443501
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22 
+          port: 22
           script: |
             cd /home/u5443501/public_html/twibbon
             git pull origin main
