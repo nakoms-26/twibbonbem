@@ -13,6 +13,8 @@ model Admin {
   username  String   @unique
   password  String
   createdAt DateTime @default(now())
+
+  @@map("admin")
 }
 
 model Twibbon {
@@ -29,6 +31,8 @@ model Twibbon {
   updatedAt   DateTime    @updatedAt
 
   downloads   Download[]
+
+  @@map("twibbon")
 }
 
 model Download {
@@ -38,6 +42,8 @@ model Download {
   createdAt DateTime @default(now())
 
   twibbon   Twibbon  @relation(fields: [twibbonId], references: [id], onDelete: Cascade)
+
+  @@map("download")
 }
 
 enum OverlayType {
