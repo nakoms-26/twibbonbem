@@ -14,8 +14,12 @@ async function saveFile(file: File, folder: string): Promise<string> {
   const buffer = Buffer.from(bytes);
 
   const timestamp = Date.now();
-  const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
-  const filename = `${timestamp}-${safeName}`;
+  
+  // Keamanan: Paksa ekstensi file menjadi aman (.png atau .mp4) untuk mencegah RCE/Upload shell php di Hostinger.
+  const isVideo = folder === "videos";
+  const extension = isVideo ? ".mp4" : ".png";
+  const filename = `${timestamp}-twibbon${extension}`;
+  
   const uploadDir = path.join(process.cwd(), "public", "uploads", folder);
   
   // Pastikan direktori ada
