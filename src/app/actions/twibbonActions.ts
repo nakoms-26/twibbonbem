@@ -10,29 +10,38 @@ import { authOptions } from "@/lib/auth";
 
 // Fungsi helper untuk menyimpan file secara lokal
 async function saveFile(file: File, folder: string): Promise<string> {
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
+  const uploadApiUrl = process.env.NEXT_PUBLIC_UPLOAD_API_URL;
+  const uploadSecret = process.env.UPLOAD_SECRET;
 
-  const timestamp = Date.now();
-  
-  // Keamanan: Paksa ekstensi file menjadi aman (.png atau .mp4) untuk mencegah RCE/Upload shell php di Hostinger.
-  const isVideo = folder === "videos";
-  const extension = isVideo ? ".mp4" : ".png";
-  const filename = `${timestamp}-twibbon${extension}`;
-  
-  const uploadDir = path.join(process.cwd(), "public", "uploads", folder);
-  
-  // Pastikan direktori ada
-  try {
-    await mkdir(uploadDir, { recursive: true });
-  } catch (e) {
-    // Abaikan jika direktori sudah ada
+  if (!uploadApiUrl || !uploadSecret) {
+    throw new Error("Sistem gagal: URL API atau Secret untuk upload belum diatur di Environment Variables!");
   }
 
-  const filepath = path.join(uploadDir, filename);
-  await writeFile(filepath, buffer);
-  
-  return `/uploads/${folder}/${filename}`;
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("folder", folder);
+  formData.append("secret", uploadSecret);
+
+  try {
+    const response = await fetch(uploadApiUrl, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Upload failed with status ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (data.success) {
+      return data.url; // Mengembalikan URL file dari asset.bem-unsoed.com
+    } else {
+      throw new Error(data.error || "Upload failed on the asset server");
+    }
+  } catch (error) {
+    console.error("Upload error:", error);
+    throw new Error("Gagal mengunggah file ke server aset Hostinger.");
+  }
 }
 
 export async function createTwibbon(formData: FormData) {
